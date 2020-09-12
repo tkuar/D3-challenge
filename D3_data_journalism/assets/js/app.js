@@ -24,3 +24,30 @@ var svg = d3
 var chartGroup = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
+// Initial Params
+var chosenXAxis = "In Poverty (%)";
+var chosenYAxis = "Lacks Healthcare (%)";
+
+// Function used for updating x-scale var upon click on axis label
+function xScale(data, chosenXAxis) {
+    // create scales
+    var xLinearScale = d3.scaleLinear()
+      .domain([d3.min(data, d => d[chosenXAxis]) * 0.8,
+        d3.max(data, d => d[chosenXAxis]) * 1.2
+      ])
+      .range([0, width]);
+  
+    return xLinearScale;
+}
+
+// Function used for updating y-scale var upon click on axis label
+function yScale(data, chosenYAxis) {
+    // create scales
+    var yLinearScale = d3.scaleLinear()
+      .domain([d3.min(data, d => d[chosenYAxis]) * 0.8,
+        d3.max(data, d => d[chosenYAxis]) * 1.2
+      ])
+      .range([height,0]);
+  
+    return yLinearScale;
+}
