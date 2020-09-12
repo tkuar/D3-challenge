@@ -1,11 +1,11 @@
 // @TODO: YOUR CODE HERE!
-var svgWidth = 960;
-var svgHeight = 500;
+var svgWidth = 840;
+var svgHeight = 480;
 
 var margin = {
-    top: 20,
-    right: 40,
-    bottom: 80,
+    top: 30,
+    right: 30,
+    bottom: 70,
     left: 100
 };
 
@@ -65,7 +65,7 @@ function renderXAxes(newXScale, xAxis) {
 function renderYAxes(newYScale, yAxis) {
     var bottomAxis = d3.axisBottom(newYScale);
 
-    xAxis.transition()
+    yAxis.transition()
         .duration(1000)
         .call(bottomAxis);
 
@@ -122,7 +122,7 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 // Retrieve data from the CSV file and execute everything below
 d3.csv("assets/data/data.csv").then(function (data, err) {
     if (err) throw err;
-    
+
     // Parse data
     data.forEach(function (d) {
         d.poverty = +d.poverty;
@@ -149,7 +149,7 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
     var yAxis = chartGroup.append("g")
         .classed("y-axis", true)
         .call(leftAxis);
-    
+
     // Append initial circles
     var circlesGroup = chartGroup.selectAll("circle")
         .data(data)
@@ -158,8 +158,8 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
         .attr("cx", d => xLinearScale(d[chosenXAxis]))
         .attr("cy", d => yLinearScale(d[chosenYAxis]))
         .attr("r", "15")
-        .attr("fill", "green")
-        .attr("opacity", ".5");
+        .attr("fill", "blue")
+        .attr("opacity", ".45");
 
     // Add text of State abbreviations to initial circles
     var circleTextGroup = chartGroup.selectAll()
@@ -171,7 +171,24 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
         .attr("y", d => yLinearScale(d[chosenYAxis]))
         .style("font-size", "12px")
         .style("text-anchor", "middle")
-        .style('fill', 'black');
+        .style("fill", "white");
+
+    // Create axes labels.
+    chartGroup.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 35 - margin.left)
+        .attr("x", 0 - (height / 2.5))
+        .attr("dy", "1em")
+        .classed("axis-text", true)
+        .classed("active", true)
+        .text("Lacks Healthcare (%)");
+
+        
+    chartGroup.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.top + 20)
+    .classed("active", true)
+    .text("In Poverty (%)");
 
     // Update circles with new x values.
     circlesGroup = renderCircles(circlesGroup, xLinearScale, yLinearScale, chosenXAxis, chosenYAxis);
@@ -179,6 +196,6 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
     circleTextGroup = renderText(circleTextGroup, xLinearScale, yLinearScale, chosenXAxis, chosenYAxis);
 
 
-}).catch(function(error) {
+}).catch(function (error) {
     console.log(error);
 });
