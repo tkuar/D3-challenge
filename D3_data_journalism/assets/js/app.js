@@ -1,4 +1,6 @@
-// @TODO: YOUR CODE HERE!
+/**
+ * Interactive Scatter Plot using data from assets/data/data.csv
+ */
 var svgWidth = 900;
 var svgHeight = 500;
 
@@ -63,7 +65,7 @@ function renderXAxes(newXScale, xAxis) {
 
 // Function used for updating yAxis var upon click on axis label
 function renderYAxes(newYScale, yAxis) {
-    var bottomAxis = d3.axisBottom(newYScale);
+    var bottomAxis = d3.axisLeft(newYScale);
 
     yAxis.transition()
         .duration(1000)
@@ -209,7 +211,7 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
     var yLabelsGroup = chartGroup.append("g");
     var healthcareLabel = yLabelsGroup.append("text")
         .attr("transform", "rotate(-90)")
-        .attr("x",-(height / 2))
+        .attr("x", -(height / 2))
         .attr("y", 0 - 40)
         .attr("value", "healthcare") // value to grab for event listener.
         .classed("active", true)
@@ -223,15 +225,15 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
         .classed("inactive", true)
         .text("Smokes (%)");
 
-    // updateToolTip function above csv import
+    // Using updateToolTip function above csv import
     var circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
-    // x axis labels event listener
+    // X axis labels event listener
     xLabelsGroup.selectAll("text")
         .on("click", function () {
             // get value of selection
             var value = d3.select(this).attr("value");
-            
+
             if (value !== chosenXAxis) {
                 // replaces chosenXAxis with value
                 chosenXAxis = value;
@@ -268,7 +270,50 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
             circleTextGroup = renderText(circleTextGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
             // Updates tooltips with new info
             circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+        });
 
+    // Y axis labels event listener
+    yLabelsGroup.selectAll("text")
+        .on("click", function () {
+            // get value of selection
+            var value = d3.select(this).attr("value");
+
+            if (value !== chosenYAxis) {
+                // replaces chosenXAxis with value
+                chosenYAxis = value;
+
+                console.log(chosenYAxis)
+
+                // functions here found above csv import
+                // updates y scale for new data
+                yLinearScale = yScale(data, chosenYAxis);
+
+                // updates y axis with transition
+                yAxis = renderYAxes(yLinearScale, yAxis);
+                // changes classes to change bold text
+                if (chosenYAxis === "healthcare") {
+                    healthcareLabel
+                        .classed("active", true)
+                        .classed("inactive", false);
+                    smokeLabel
+                        .classed("active", false)
+                        .classed("inactive", true);
+                }
+                else {
+                    healthcareLabel
+                        .classed("active", false)
+                        .classed("inactive", true);
+                    smokeLabel
+                        .classed("active", true)
+                        .classed("inactive", false);
+                }
+            }
+            // Updates circles with new x and y values
+            circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
+            // Update circles text with new  x and y values.
+            circleTextGroup = renderText(circleTextGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
+            // Updates tooltips with new info
+            circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
         });
 
 }).catch(function (error) {
