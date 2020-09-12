@@ -1,6 +1,6 @@
 // @TODO: YOUR CODE HERE!
-var svgWidth = 840;
-var svgHeight = 480;
+var svgWidth = 900;
+var svgHeight = 500;
 
 var margin = {
     top: 30,
@@ -188,35 +188,37 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
         .style("fill", "white");
 
     // Create group for two x-axis labels
-    var labelsGroup = chartGroup.append("g")
+    var xLabelsGroup = chartGroup.append("g")
         .attr("transform", `translate(${width / 2}, ${height + 20})`);
 
-    var povertyLabel = labelsGroup.append("text")
+    var povertyLabel = xLabelsGroup.append("text")
         .attr("x", 0)
-        .attr("y", 20)
+        .attr("y", 10)
         .attr("value", "poverty") // value to grab for event listener.
         .classed("active", true)
         .text("In Poverty (%)");
 
-    var ageLabel = labelsGroup.append("text")
+    var ageLabel = xLabelsGroup.append("text")
         .attr("x", 0)
-        .attr("y", 40)
+        .attr("y", 30)
         .attr("value", "age") // value to grab for event listener.
         .classed("inactive", true)
         .text("Age (Median)");
 
-    var healthcareLabel = labelsGroup.append("text")
+    // Create group for two y-axis labels
+    var yLabelsGroup = chartGroup.append("g");
+    var healthcareLabel = yLabelsGroup.append("text")
         .attr("transform", "rotate(-90)")
-        .attr("x", (margin.left) * 2.5)
-        .attr("y", 0 - (height - 60))
+        .attr("x",-(height / 2))
+        .attr("y", 0 - 40)
         .attr("value", "healthcare") // value to grab for event listener.
         .classed("active", true)
         .text("Lacks Healthcare (%)");
 
-    var smokeLabel = labelsGroup.append("text")
+    var smokeLabel = yLabelsGroup.append("text")
         .attr("transform", "rotate(-90)")
-        .attr("x", (margin.left) * 2.5)
-        .attr("y", 0 - (height - 40))
+        .attr("x", -(height / 2))
+        .attr("y", 0 - 60)
         .attr("value", "smokes") // value to grab for event listener.
         .classed("inactive", true)
         .text("Smokes (%)");
@@ -225,12 +227,12 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
     var circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
     // x axis labels event listener
-    labelsGroup.selectAll("text")
+    xLabelsGroup.selectAll("text")
         .on("click", function () {
             // get value of selection
             var value = d3.select(this).attr("value");
+            
             if (value !== chosenXAxis) {
-
                 // replaces chosenXAxis with value
                 chosenXAxis = value;
 
@@ -242,8 +244,6 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
 
                 // updates x axis with transition
                 xAxis = renderXAxes(xLinearScale, xAxis);
-
-
                 // changes classes to change bold text
                 if (chosenXAxis === "poverty") {
                     povertyLabel
@@ -261,9 +261,7 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
                         .classed("active", true)
                         .classed("inactive", false);
                 }
-
             }
-
             // Updates circles with new x and y values
             circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
             // Update circles text with new  x and y values.
