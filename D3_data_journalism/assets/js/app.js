@@ -73,7 +73,7 @@ function renderYAxes(newYScale, yAxis) {
 }
 
 // Function used for updating circles group with a transition to new circles
-function renderCircles(circlesGroup, newXScale, newYScale, chosenXAxis, chosenYAxis) {
+function renderCircles(circlesGroup, newXScale, chosenXAxis, newYScale, chosenYAxis) {
     circlesGroup.transition()
         .duration(1000)
         .attr("cx", d => newXScale(d[chosenXAxis]))
@@ -83,7 +83,7 @@ function renderCircles(circlesGroup, newXScale, newYScale, chosenXAxis, chosenYA
 }
 
 // Function used for updating text in circles group with a transition to new text.
-function renderText(circleTextGroup, newXScale, newYScale, chosenXAxis, chosenYAxis) {
+function renderText(circleTextGroup, newXScale, chosenXAxis, newYScale, chosenYAxis) {
     circleTextGroup.transition()
         .duration(1000)
         .attr("x", d => newXScale(d[chosenXAxis]))
@@ -112,11 +112,21 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
     }
 
     var toolTip = d3.tip()
-        .attr("class", "tooltip")
+        .attr("class", "d3-tip")
         .offset([80, -60])
         .html(function (d) {
-            return (`${d.state}<br>${xLabel} ${d[chosenXAxis]}`)
+            return (`${d.state}<br>${xLabel} ${d[chosenXAxis]}<br>${yLabel} ${d[chosenYAxis]}`)
         });
+
+    circlesGroup.call(toolTip);
+    // On click event and on mouseout event
+    circlesGroup.on("click", function (d) {
+        toolTip.show(d, this);
+    }).on("mouseout", function (d) {
+        toolTip.hide(d);
+    });
+
+    return circlesGroup;
 }
 
 // Retrieve data from the CSV file and execute everything below
@@ -127,6 +137,10 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
     data.forEach(function (d) {
         d.poverty = +d.poverty;
         d.healthcare = +d.healthcare;
+        d.age = +d.age;
+        d.smokes = +d.smokes;
+        d.obesity = +d.obesity;
+        d.income = +d.income;
     });
 
     // xLinearScale function above csv import
@@ -173,28 +187,91 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
         .style("text-anchor", "middle")
         .style("fill", "white");
 
-    // Create axes labels.
-    chartGroup.append("text")
+    // Create group for two x-axis labels
+    var labelsGroup = chartGroup.append("g")
+        .attr("transform", `translate(${width / 2}, ${height + 20})`);
+
+    var povertyLabel = labelsGroup.append("text")
+        .attr("x", 0)
+        .attr("y", 20)
+        .attr("value", "poverty") // value to grab for event listener.
+        .classed("active", true)
+        .text("In Poverty (%)");
+
+    var ageLabel = labelsGroup.append("text")
+        .attr("x", 0)
+        .attr("y", 40)
+        .attr("value", "age") // value to grab for event listener.
+        .classed("inactive", true)
+        .text("Age (Median)");
+
+    var healthcareLabel = labelsGroup.append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", 35 - margin.left)
-        .attr("x", 0 - (height / 2.5))
-        .attr("dy", "1em")
-        .classed("axis-text", true)
+        .attr("x", (margin.left) * 2.5)
+        .attr("y", 0 - (height - 60))
+        .attr("value", "healthcare") // value to grab for event listener.
         .classed("active", true)
         .text("Lacks Healthcare (%)");
 
-        
-    chartGroup.append("text")
-    .attr("x", width / 2)
-    .attr("y", height + margin.top + 20)
-    .classed("active", true)
-    .text("In Poverty (%)");
+    var smokeLabel = labelsGroup.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", (margin.left) * 2.5)
+        .attr("y", 0 - (height - 40))
+        .attr("value", "smokes") // value to grab for event listener.
+        .classed("inactive", true)
+        .text("Smokes (%)");
 
-    // Update circles with new x values.
-    circlesGroup = renderCircles(circlesGroup, xLinearScale, yLinearScale, chosenXAxis, chosenYAxis);
-    // Update circles text with new values.
-    circleTextGroup = renderText(circleTextGroup, xLinearScale, yLinearScale, chosenXAxis, chosenYAxis);
+    // updateToolTip function above csv import
+    var circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
+    // x axis labels event listener
+    labelsGroup.selectAll("text")
+        .on("click", function () {
+            // get value of selection
+            var value = d3.select(this).attr("value");
+            if (value !== chosenXAxis) {
+
+                // replaces chosenXAxis with value
+                chosenXAxis = value;
+
+                console.log(chosenXAxis)
+
+                // functions here found above csv import
+                // updates x scale for new data
+                xLinearScale = xScale(data, chosenXAxis);
+
+                // updates x axis with transition
+                xAxis = renderXAxes(xLinearScale, xAxis);
+
+
+                // changes classes to change bold text
+                if (chosenXAxis === "poverty") {
+                    povertyLabel
+                        .classed("active", true)
+                        .classed("inactive", false);
+                    ageLabel
+                        .classed("active", false)
+                        .classed("inactive", true);
+                }
+                else {
+                    povertyLabel
+                        .classed("active", false)
+                        .classed("inactive", true);
+                    ageLabel
+                        .classed("active", true)
+                        .classed("inactive", false);
+                }
+
+            }
+
+            // Updates circles with new x and y values
+            circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
+            // Update circles text with new  x and y values.
+            circleTextGroup = renderText(circleTextGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
+            // Updates tooltips with new info
+            circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+
+        });
 
 }).catch(function (error) {
     console.log(error);
