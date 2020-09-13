@@ -1,5 +1,5 @@
 # D3-challenge
-
+![scatter plot](d3Times.gif)
 ## Summary
 * Utilizes both **HTML** and **Javascript** and the data set based on the 2014 ACS 1-year estimates: https://factfinder.census.gov/faces/nav/jsf/pages/searchresults.xhtm 
 * Creates a scatter plot between two of the data variables: `poverty`, `age`, `income`, `healthcare`,`smokes`, and `obesity`.
