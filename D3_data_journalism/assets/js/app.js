@@ -100,38 +100,46 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
     var yLabel;
 
     if (chosenXAxis === "poverty") {
-        xLabel = "In Poverty (%)";
+        xLabel = "Poverty: ";
     }
     else if (chosenXAxis === "age") {
-        xLabel = "Age (Median)"
+        xLabel = "Age: "
     }
     else {
-        xLabel = "Household Income (Median)";
+        xLabel = "Income: ";
     }
 
     if (chosenYAxis === "healthcare") {
-        yLabel = "Lacks Healthcare (%)";
+        yLabel = "Lacks Healthcare: ";
     }
     else if (chosenYAxis === "smokes") {
-        yLabel = "Smokes (%)"
+        yLabel = "Smokes: "
     }
     else {
-        yLabel = "Obese (%)";
+        yLabel = "Obesity: ";
     }
 
     var toolTip = d3.tip()
         .attr("class", "d3-tip")
-        .offset([80, -60])
+        .offset([85, -65])
         .html(function (d) {
-            return (`${d.state}<br>${xLabel} ${d[chosenXAxis]}<br>${yLabel} ${d[chosenYAxis]}`)
+            if (chosenXAxis === "income") {
+                return (`${d.state}<br>${xLabel}$${d[chosenXAxis]}<br>${yLabel} ${d[chosenYAxis]}%`)
+            }
+            else if (chosenXAxis === "age") {
+                return (`${d.state}<br>${xLabel}${d[chosenXAxis]} Years Old<br>${yLabel} ${d[chosenYAxis]}%`)
+            }
+            else {
+                return (`${d.state}<br>${xLabel}${d[chosenXAxis]}%<br>${yLabel} ${d[chosenYAxis]}%`)
+            }
         });
 
     circlesGroup.call(toolTip);
-    // On click event and on mouseout event
-    circlesGroup.on("click", function (d) {
+    // On mouseover event and on mouseout event
+    circlesGroup.on("mouseover", function (d) {
         toolTip.show(d, this);
     }).on("mouseout", function (d) {
-        toolTip.hide(d);
+        toolTip.hide(d, this);
     });
 
     return circlesGroup;
@@ -180,7 +188,7 @@ d3.csv("assets/data/data.csv").then(function (data, err) {
         .attr("cx", d => xLinearScale(d[chosenXAxis]))
         .attr("cy", d => yLinearScale(d[chosenYAxis]))
         .attr("r", "15")
-        .attr("fill", "blue")
+        .attr("fill", "midnightblue")
         .attr("opacity", ".45");
 
     // Add text of State abbreviations to initial circles
